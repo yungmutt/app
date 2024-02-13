@@ -1,20 +1,69 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import {NavigationContainer} from "@react-navigation/native";
+import {firebase} from "./firebase"
+import Home from "./screens/Home";
+import LoginSc from "./screens/LoginSc";
+import RegistrationSc from "./screens/RegistrationSc";
+import React, {useEffect, useState} from "react";
+import {createStackNavigator} from "@react-navigation/stack";
+import Tabs from "./components/Tabs";
+// import {useGetConcerts} from "./components/useGetConcerts";
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+const Stack = createStackNavigator();
+const App = () => {
+    function useAuthentication() {
+        const [initializing, setInitializing] = useState(true);
+        const [user, setUser] = useState<firebase.User | null>(null);
+
+        function onAuthStateChanged(user: firebase.User | null) {
+            setUser(user);
+            if (initializing) setInitializing(false);
+        }
+
+        useEffect(() => {
+            return firebase.auth().onAuthStateChanged(onAuthStateChanged);
+        }, []);
+
+        return {user: initializing ? user : null};
+    }
+    const {user} = useAuthentication();
+
+    // const [loading, error, concerts] = useGetConcerts();
+
+    // if (concerts) {
+    //     console.log("concerts", concerts);
+    // }
+
+    return user ? (
+        <NavigationContainer>
+            <Tabs/>
+        </NavigationContainer>
+    ):(
+            <NavigationContainer>
+                <Stack.Navigator>
+                    <Stack.Screen
+                        name="Login"
+                        component={LoginSc}
+                        options={{
+                            headerShown: false,
+                        }}
+                    />
+                    <Stack.Screen
+                        name="Registration"
+                        component={RegistrationSc}
+                        options={{
+                            headerShown: false,
+                        }}
+                    />
+                    <Stack.Screen
+                        name="Home"
+                        component={Tabs}
+                        options={{
+                            headerShown: false,
+                        }}
+                    />
+                </Stack.Navigator>
+            </NavigationContainer>
+    );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default App;
