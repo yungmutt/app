@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import {useNavigation} from "@react-navigation/native";
 import {NativeStackNavigationProp} from "react-native-screens/native-stack";
 import {firebase} from "../firebase";
-import {SafeAreaView, Text, TouchableOpacity, View, StyleSheet} from "react-native";
+import {SafeAreaView, Text, TouchableOpacity, View, StyleSheet, ScrollView, RefreshControl} from "react-native";
 
 interface User {
     name: string;
@@ -12,8 +12,13 @@ interface User {
 const Settings = () => {
     const [user, setUser] = useState<string>('');
     const navigation = useNavigation<NativeStackNavigationProp<any>>();
+    const [refreshing, setRefreshing] = React.useState(false);
 
-    useEffect(() => {
+    const onRefresh = React.useCallback(() => {
+      setRefreshing(true);
+      setTimeout(() => {
+          setRefreshing(false);
+      }, 1500);
         firebase.firestore().collection('users')
             .doc(firebase.auth().currentUser?.uid).get()
             .then((snapshot) => {
@@ -24,55 +29,91 @@ const Settings = () => {
                 else {
                     console.log("User not found")
                 }
-            })
+            });
     }, []);
+
+    // useEffect(() => {
+    //     firebase.firestore().collection('users')
+    //         .doc(firebase.auth().currentUser?.uid).get()
+    //         .then((snapshot) => {
+    //             if (snapshot.exists){
+    //                 const data = snapshot.data() as User;
+    //                 setUser(`${data.name} ${data.surname}`);
+    //             }
+    //             else {
+    //                 console.log("User not found")
+    //             }
+    //         })
+    // }, []);
 
     return (
         <SafeAreaView style={styles.container}>
-            <View>
-                <Text>Welcome {user}</Text>
-            </View>
-            <TouchableOpacity onPress={() => {
-                firebase.auth().signOut()
-                navigation.navigate('Login')
-            }}>
-                <Text style={styles.entityText}>Sign Out</Text>
-            </TouchableOpacity>
+            <ScrollView
+                refreshControl={
+                <RefreshControl refreshing={refreshing}
+                                onRefresh={onRefresh}/>
+                }
+            >
+                <View>
+                    <Text style={styles.title}>Welcome </Text>
+                    <Text style={styles.username}>{user}</Text>
+                </View>
+                <TouchableOpacity
+                    style={styles.button}
+                    onPress={() => {
+                        navigation.navigate('ChangeUserInfo')
+                    }}>
+                    <Text style={styles.buttonTitle}>Change account information</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => {
+                    firebase.auth().signOut()
+                    navigation.navigate('Login')
+                }}>
+                    <Text style={styles.signOut}>Sign Out</Text>
+                </TouchableOpacity>
+            </ScrollView>
         </SafeAreaView>
     )
 }
 
 const styles = StyleSheet.create({
-    container:{
+    container: {
         flex: 1,
-        alignItems: "center"
+        alignItems: "center",
+        backgroundColor: '#8484ff'
+    },
+    title:{
+        fontSize: 50,
+        alignSelf: "center"
+    },
+    username: {
+        fontSize: 40,
+        fontFamily: "AvenirNext-MediumItalic",
+        alignSelf: "center"
+    },
+    signOut: {
+        fontSize: 17,
+        color: 'red',
+        alignSelf: "center"
     },
     button: {
-        height: 47,
-        borderRadius: 5,
-        backgroundColor: '#788eec',
-        width: 80,
-        alignItems: "center",
-        justifyContent: 'center'
-    },
-    buttonText: {
-        color: 'white',
-        fontSize: 16
-    },
-    listContainer: {
+        backgroundColor: '#6582f3',
+        marginLeft: 30,
+        paddingLeft: 10,
+        paddingRight: 10,
+        marginRight: 30,
         marginTop: 20,
-        padding: 20,
+        marginBottom: 20,
+        height: 48,
+        borderRadius: 5,
+        alignItems: "center",
+        justifyContent: 'center',
     },
-    entityContainer: {
-        marginTop: 16,
-        borderBottomColor: '#cccccc',
-        borderBottomWidth: 1,
-        paddingBottom: 16
+    buttonTitle: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: "bold",
     },
-    entityText: {
-        fontSize: 20,
-        color: '#333333'
-    }
 })
 
 export default Settings;

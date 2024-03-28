@@ -1,36 +1,31 @@
-// import * as Location from 'expo-location';
-// import {useEffect, useState} from "react";
+// import {useState} from "react";
+// import {useNavigation} from "@react-navigation/native";
+// import {NativeStackNavigationProp} from "react-native-screens/native-stack";
 //
-//
-// export const useGetConcerts = () => {
-//     const [loading, setLoading] = useState(true);
-//     const [error, setError] = useState('');
-//     const [concerts, setConcerts] = useState([]);
-//     const [lat, setLat] = useState(null);
-//     const [lon, setLon] = useState(null);
-//
-//     const fetchConcerts = async (lat: number, lon: number) => {
-//         try {
-//             const res = await fetch(`https://app.ticketmaster.com/discovery/v2/events.json?classificationName=music&getPoint=${lat},${lon}&apikey=pFb1A6GsboA31ednH81Y985KXdmkzCHi`)
-//             const data = await res.json();
-//             setConcerts(data)
-//         } catch (e) {
-//             console.log(e.message);
-//         } finally {
-//             setLoading(false)
+// type EventItem = {
+//     id: string;
+//     name: string;
+//     dates: {
+//         start: {
+//             localDate: string;
+//             localTime: string;
 //         }
 //     }
-//
-//     useEffect(() => {
-//         (async() => {
-//             let {status} = await Location.requestBackgroundPermissionsAsync()
-//             if (status !== 'granted') {
-//                 setError('Permission denied')
-//                 return
-//             }
-//             let location = await Location.getCurrentPositionAsync({})
-//             await fetchConcerts(location.coords.latitude, location.coords.longitude)
-//         })()
-//     }, [])
-//     return [loading, error, concerts]
 // }
+//
+// const [events, setEvents] = useState<EventItem[]>([]);
+// const [isLoading, setLoading] = useState(true);
+//
+// export const getConcerts = async () => {
+//     try {
+//         const response = await fetch("https://app.ticketmaster.com/discovery/v2/events?apikey=pFb1A6GsboA31ednH81Y985KXdmkzCHi&locale=*&size=5&classificationName=music&geoPoint=51.2589173,22.5516489");
+//         const json = await response.json();
+//         const events = json._embedded.events;
+//         setEvents(events);
+//         console.log(events);
+//     } catch (error) {
+//         console.error(error);
+//     } finally {
+//         setLoading(false)
+//     }
+// };

@@ -6,6 +6,9 @@ import RegistrationSc from "./screens/RegistrationSc";
 import React, {useEffect, useState} from "react";
 import {createStackNavigator} from "@react-navigation/stack";
 import Tabs from "./components/Tabs";
+import EventSc from "./screens/EventSc";
+import ChangeUserInfo from "./screens/ChangeUserInfo";
+import CreatePost from "./screens/CreatePost";
 // import {useGetConcerts} from "./components/useGetConcerts";
 
 const Stack = createStackNavigator();
@@ -26,12 +29,6 @@ const App = () => {
         return {user: initializing ? user : null};
     }
     const {user} = useAuthentication();
-
-    // const [loading, error, concerts] = useGetConcerts();
-
-    // if (concerts) {
-    //     console.log("concerts", concerts);
-    // }
 
     return user ? (
         <NavigationContainer>
@@ -61,6 +58,23 @@ const App = () => {
                             headerShown: false,
                         }}
                     />
+                    <Stack.Screen
+                        name="EventSc"
+                        component={EventSc}
+                        options={{
+                            headerShown: false,
+                        }}
+                    />
+                    <Stack.Screen
+                        name="CreatePost"
+                        component={CreatePost}
+                        options={{
+                            headerShown: false,
+                        }}
+                    />
+                    <Stack.Screen name="ChangeUserInfo"
+                                  component={ChangeUserInfo}
+                                  options={{headerShown: false}}/>
                 </Stack.Navigator>
             </NavigationContainer>
     );

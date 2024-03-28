@@ -1,33 +1,60 @@
-import {ActivityIndicator, SafeAreaView, Text, View, StyleSheet, TouchableOpacity, FlatList} from "react-native";
-import React, {useEffect, useState} from "react";
+
+import {
+    ActivityIndicator,
+    SafeAreaView,
+    Text,
+    View,
+    StyleSheet,
+    TouchableOpacity,
+    FlatList,
+    ScrollView, RefreshControl
+} from "react-native";
+import React, {useCallback, useEffect, useState} from "react";
 import {firebase} from "../firebase";
+import moment from "moment";
+import {useNavigation} from "@react-navigation/native";
+import {NativeStackNavigationProp} from "react-native-screens/native-stack";
 
 
 type EventItem = {
     id: string;
     name: string;
-    localDate: string;
-    localTime: string;
-
+    dates: {
+        start: {
+            localDate: string;
+            localTime: string;
+        }
+    }
 }
 
 const Home = () => {
     const [events, setEvents] = useState<EventItem[]>([]);
     const [isLoading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+    const [refreshing, setRefreshing] = React.useState(false);
+
+    const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
     const getConcerts = async () => {
         try {
             const response = await fetch("https://app.ticketmaster.com/discovery/v2/events?apikey=pFb1A6GsboA31ednH81Y985KXdmkzCHi&locale=*&size=5&classificationName=music&geoPoint=51.2589173,22.5516489");
-            const events = await response.json();
+            const json = await response.json();
+            const events = json._embedded.events;
             setEvents(events);
-            console.log(events)
+            console.log(events);
         } catch (error) {
             console.error(error);
         } finally {
             setLoading(false)
         }
     };
+
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+        setTimeout(() => {
+            setRefreshing(false);
+        }, 1500);
+        getConcerts();
+    }, []);
 
     useEffect(() => {
         (async () => {
@@ -38,75 +65,64 @@ const Home = () => {
     return(
         <SafeAreaView style={styles.container}>
             {isLoading ? (
-                <ActivityIndicator color='black' size='large' />
+                <ActivityIndicator color='black' size='large' style={{alignSelf: "center"}} />
             ) : (
-                <FlatList
-                    style={styles.listContainer}
-                    data={events}
-                    keyExtractor={(item) => item.id.toString()}
-                    renderItem={({item}) => (
-                        <View style={styles.entityContainer}>
-                            <Text style={styles.entityText}>{item.name}</Text>
-                            <Text style={styles.entityText}>
-                                {item.localDate}
-                            </Text>
-                            <Text style={styles.entityText}>
-                                {item.localTime}
-                            </Text>
-                        </View>
-                    )}
-                />
+                    <FlatList
+                        style={styles.listContainer}
+                        data={events}
+                        keyExtractor={(item) => item.id.toString()}
+                        refreshControl={
+                            <RefreshControl refreshing={refreshing}
+                                            onRefresh={onRefresh}/>}
+                        renderItem={({item}) => (
+                            <TouchableOpacity onPress={() => {
+                                navigation.navigate("EventSc", {id: item.id})
+                            }}>
+                                <View style={styles.entityContainer}>
+                                    <Text style={styles.entityTitle}>{item.name}</Text>
+                                    <Text style={styles.entityText}>
+                                        {moment(item.dates.start.localDate).format("DD/MM/YYYY")}
+                                    </Text>
+                                    <Text style={styles.entityText}>
+                                        {item.dates.start.localTime}
+                                    </Text>
+                                </View>
+                            </TouchableOpacity>
+                        )}
+                    />
                     )}
         </SafeAreaView>
     )
-
-
-    // const renderItem = ({item}: {item: EventItem}) => (
-    //     item._embedded.events.map((concert) => (
-    //         <ListItem
-    //             name={concert.name}
-    //             dates={[concert.dates.start.localDate, concert.dates.start.localTime]}
-    //         />))
-    // )
-    // return(
-    //         <SafeAreaView style={styles.container}>
-    //             <Text>Home</Text>
-    //             <FlatList data={eventsData} renderItem={renderItem} keyExtractor={(item, index) => index.toString(0)} />
-    //         </SafeAreaView>
-
-    // )
 };
 
 const styles = StyleSheet.create({
     container:{
         flex: 1,
-        alignItems: "center"
-    },
-    button: {
-        height: 47,
-        borderRadius: 5,
-        backgroundColor: '#788eec',
-        width: 80,
         alignItems: "center",
-        justifyContent: 'center'
-    },
-    buttonText: {
-        color: 'white',
-        fontSize: 16
+        backgroundColor: '#8484ff'
     },
     listContainer: {
         marginTop: 20,
         padding: 20,
     },
     entityContainer: {
-        marginTop: 16,
-        borderBottomColor: '#cccccc',
-        borderBottomWidth: 1,
-        paddingBottom: 16
+        marginTop: 15,
+        paddingTop: 5,
+        paddingBottom: 13,
+        paddingRight: 10,
+        paddingLeft: 10,
+        backgroundColor: '#9c9cff',
+        borderRadius: 8
+    },
+    entityTitle:{
+        fontSize: 25,
+        fontWeight: "bold",
+        color: "#252573"
     },
     entityText: {
         fontSize: 20,
-        color: '#333333'
+        color: '#333333',
+        alignItems: "center"
     }
 })
 

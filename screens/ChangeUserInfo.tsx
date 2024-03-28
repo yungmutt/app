@@ -1,43 +1,55 @@
-import {useState} from "react";
-import {SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity} from "react-native";
+ import {SafeAreaView, Text, TextInput, TouchableOpacity, StyleSheet} from "react-native";
 import {KeyboardAwareScrollView} from "react-native-keyboard-aware-scroll-view";
+import SizedBox from "../components/SizedBox";
+import {firebase} from "../firebase";
+import {useState} from "react";
 import {useNavigation} from "@react-navigation/native";
 import {NativeStackNavigationProp} from "react-native-screens/native-stack";
-import {firebase} from "../firebase";
-import SizedBox from "../components/SizedBox";
 
-
-const RegistrationSc = () => {
-    const [name, setName] = useState<string>('');
-    const [surname, setSurname] = useState<string>('');
-    const [email, setEmail] = useState<string>('');
-    const [password, setPassword] = useState<string>('');
+const ChangeUserInfo = () => {
+    const [name, setName] = useState("");
+    const [surname, setSurname] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
 
     const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
-    const registerUser = async (email: string, password: string, name: string, surname: string) => {
-        try {
-            await firebase.auth().createUserWithEmailAndPassword(email, password)
-            await firebase.auth().currentUser?.sendEmailVerification({
-                handleCodeInApp: true,
-                url:'https://application-83a87.firebaseapp.com',
-            });
-            alert('Verification email sent!');
-            await firebase.firestore().collection('users')
-                .doc(firebase.auth().currentUser?.uid)
-                .set({
-                    name: name,
-                    surname: surname,
-                    email: email,
-                });
-            navigation.navigate('Home');
-        } catch(e) {
-            if (e instanceof Error) {
-                alert(e.message);
+    const db = firebase.firestore();
+    const rdb = firebase.database();
+    const changeInfo = async (email?: string, password?: string, name?: string, surname?: string) => {
+        if (!name && !surname && !email && !password) {
+            alert("No submitted data!");
+            return;
+        }
+
+        const userRef = db.collection('users').doc(firebase.auth().currentUser?.uid);
+        const updates: {name?: string, surname?: string, email?: string} = {};
+        if (name) {
+            updates.name = name;
+            alert("Data successfully updated!");
+        }
+        if (surname) {
+            updates.name = surname
+            alert("Data successfully updated!");
+        }
+        if (email) {
+            updates.email = email
+            alert("Data successfully updated!");
+        }
+        await userRef.update(updates);
+
+        if (password) {
+            const user = firebase.auth().currentUser;
+            if (user){
+                user.updatePassword(password).catch((error) => {
+                    console.error(error);
+                })
             }
         }
+        navigation.navigate('Settings');
     }
-    return (
+
+    return(
         <SafeAreaView style={styles.container}>
             <KeyboardAwareScrollView
                 keyboardShouldPersistTaps="always"
@@ -45,17 +57,17 @@ const RegistrationSc = () => {
                 <SizedBox height={200}/>
                 <TextInput
                     style={styles.input}
-                    placeholder='Enter your name'
+                    placeholder='Name'
                     onChangeText={(name) => setName(name)}
                 />
                 <TextInput
                     style={styles.input}
-                    placeholder='Enter your surname'
+                    placeholder='Surname'
                     onChangeText={(surname) => setSurname(surname)}
                 />
                 <TextInput
                     style={styles.input}
-                    placeholder='Enter your e-mail address'
+                    placeholder='E-mail address'
                     onChangeText={(email) => setEmail(email)}
                     autoCapitalize="none"
                     autoCorrect={false}
@@ -63,7 +75,7 @@ const RegistrationSc = () => {
                 />
                 <TextInput
                     style={styles.input}
-                    placeholder='Enter your password'
+                    placeholder='Password'
                     secureTextEntry={true}
                     onChangeText={(password) => setPassword(password)}
                     autoCapitalize="none"
@@ -71,17 +83,17 @@ const RegistrationSc = () => {
                 />
                 <TouchableOpacity
                     style={styles.button}
-                    onPress={() => registerUser(email, password, name, surname)}
+                    onPress={() => changeInfo(email, password, name, surname)}
                 >
-                    <Text style={styles.buttonTitle}>Create account</Text>
+                    <Text style={styles.buttonTitle}>Set changes</Text>
                 </TouchableOpacity>
             </KeyboardAwareScrollView>
         </SafeAreaView>
-    );
-};
+    )
+}
 
 const styles = StyleSheet.create({
-    container:{
+    container: {
         flex: 1,
         alignContent: 'center',
         backgroundColor: '#42403a'
@@ -114,4 +126,4 @@ const styles = StyleSheet.create({
     },
 })
 
-export default RegistrationSc
+export default ChangeUserInfo;
