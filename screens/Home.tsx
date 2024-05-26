@@ -1,4 +1,3 @@
-
 import {
     ActivityIndicator,
     SafeAreaView,
@@ -7,14 +6,13 @@ import {
     StyleSheet,
     TouchableOpacity,
     FlatList,
-    ScrollView, RefreshControl
+    RefreshControl
 } from "react-native";
 import React, {useCallback, useEffect, useState} from "react";
 import {firebase} from "../firebase";
 import moment from "moment";
 import {useNavigation} from "@react-navigation/native";
 import {NativeStackNavigationProp} from "react-native-screens/native-stack";
-
 
 type EventItem = {
     id: string;

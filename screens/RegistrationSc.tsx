@@ -5,7 +5,7 @@ import {useNavigation} from "@react-navigation/native";
 import {NativeStackNavigationProp} from "react-native-screens/native-stack";
 import {firebase} from "../firebase";
 import SizedBox from "../components/SizedBox";
-
+import {passValidation} from "../components/passValidation";
 
 const RegistrationSc = () => {
     const [name, setName] = useState<string>('');
@@ -17,20 +17,23 @@ const RegistrationSc = () => {
 
     const registerUser = async (email: string, password: string, name: string, surname: string) => {
         try {
-            await firebase.auth().createUserWithEmailAndPassword(email, password)
-            await firebase.auth().currentUser?.sendEmailVerification({
-                handleCodeInApp: true,
-                url:'https://application-83a87.firebaseapp.com',
-            });
-            alert('Verification email sent!');
-            await firebase.firestore().collection('users')
-                .doc(firebase.auth().currentUser?.uid)
-                .set({
-                    name: name,
-                    surname: surname,
-                    email: email,
+            passValidation(password);
+            const {user} = await firebase.auth().createUserWithEmailAndPassword(email, password);
+            if (user) {
+                await user.sendEmailVerification({
+                    handleCodeInApp: true,
+                        url:'https://application-83a87.firebaseapp.com',
                 });
-            navigation.navigate('Home');
+                alert('Verification email sent!');
+                await firebase.firestore().collection('users')
+                    .doc(firebase.auth().currentUser?.uid)
+                    .set({
+                        name: name,
+                        surname: surname,
+                        email: email,
+                    });
+                navigation.navigate('Login');
+            }
         } catch(e) {
             if (e instanceof Error) {
                 alert(e.message);

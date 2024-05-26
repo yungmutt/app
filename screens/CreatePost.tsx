@@ -1,9 +1,12 @@
-
-import {SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View, Keyboard} from "react-native";
+import {Keyboard, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View} from "react-native";
 import {useNavigation} from "@react-navigation/native";
 import {useEffect, useState} from "react";
-import {firebase}  from '../firebase';
+import {firebase, storage} from '../firebase';
 import {TouchableWithoutFeedback} from "react-native-gesture-handler";
+import * as ImagePicker from 'expo-image-picker';
+import 'firebase/storage';
+import Feather from "@expo/vector-icons/Feather";
+import {ref, getDownloadURL, uploadBytes} from "firebase/storage";
 
 type RouteProp = {
     params: {
@@ -17,15 +20,49 @@ const CreatePost = ({ route }: { route: RouteProp }) => {
     const { eventId } = route.params;
     const [title, setTitle] = useState("");
     const [body, setBody] = useState("");
-
+    const [image, setImage] = useState("");
+    const [media, setMedia] = useState<{fileType: string, url: string} | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
 
+    //launches device's image library and then image gets stored and set
+    const pickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.All,
+            allowsEditing: true,
+            aspect: [4,3],
+            quality: 0.5
+            });
+
+        if (!result.canceled){
+            setImage(result.assets[0].uri);
+            const media = await uploadImage(result.assets[0].uri, "image");
+            setMedia(media);
+        }
+    };
+
+    const uploadImage = async (uri: string, fileType: string): Promise<{fileType: string, url: string}> => {
+        try {
+            const res = await fetch(uri);
+            const blob = await res.blob();
+
+            const storageRef = ref(storage, "images/" + new Date().getTime());
+            await uploadBytes(storageRef, blob);
+            const url = await getDownloadURL(storageRef);
+            console.log('file info: ', {fileType, url});
+            return {fileType, url};
+        } catch (e: unknown) {
+            if (e instanceof Error){
+                console.error(e.message);
+            }
+            throw e;
+        }
+    };
 
     const handleSubmitPost = async () => {
-        if (!body || !title){
-          return;
+      if (!body || !title){
+        return;
       }
       setLoading(true);
       setError('');
@@ -42,20 +79,21 @@ const CreatePost = ({ route }: { route: RouteProp }) => {
           } else {
               let userData = doc.data();
               await firebase.firestore().collection('posts')
-                  .doc(uid)
-                  .set({
+                  .add({
                       title,
                       body,
+                      media,
                       eventId,
                       author:{
                           name: userData?.name,
                           surname: userData?.surname,
-                      }
+                      },
                   });
           }
           setSuccess(true);
           setTitle('');
           setBody('');
+          setMedia(null);
       } catch (err: any) {
           setSuccess(false);
           setError(err.message || "Something went wrong");
@@ -85,7 +123,7 @@ const CreatePost = ({ route }: { route: RouteProp }) => {
                                onChangeText={(text) => setTitle(text)} />
                     <TextInput placeholder='Post details'
                                style={styles.inputBody}
-                               maxLength={400}
+                               maxLength={1000}
                                value={body}
                                onChangeText={(text) => setBody(text)}
                                multiline={true}
@@ -93,12 +131,17 @@ const CreatePost = ({ route }: { route: RouteProp }) => {
                     />
                 </TouchableWithoutFeedback>
             </View>
+            <Text style={styles.bottomText}>Upload media:</Text>
+            <View style={styles.buttonsContainer}>
+                <TouchableOpacity onPress={pickImage}>
+                    <Feather name='image' size={30} color='white'/>
+                </TouchableOpacity>
+            </View>
             <TouchableOpacity
                     style={styles.button}
                     onPress={handleSubmitPost}>
                     <Text style={styles.buttonTitle}>Submit</Text>
                 </TouchableOpacity>
-
         </SafeAreaView>
     )
 }
@@ -107,6 +150,12 @@ const styles = StyleSheet.create({
     container:{
         flex: 1,
         alignItems: "center",
+        backgroundColor: '#8484ff'
+    },
+    permissionContainer: {
+        flex: 1,
+        alignItems: "center",
+        marginVertical: 300,
         backgroundColor: '#8484ff'
     },
     button: {
@@ -155,5 +204,15 @@ const styles = StyleSheet.create({
         textAlignVertical: "top",
         height: 300
     },
+    buttonsContainer: {
+        flexDirection: "row",
+        alignSelf: 'center',
+        marginTop: 5,
+        gap: 10
+    },
+    bottomText:{
+        color: 'white',
+        fontSize: 20,
+    }
 })
 export default CreatePost;

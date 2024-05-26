@@ -3,8 +3,6 @@ import Settings from "../screens/Settings";
 import React from "react";
 import {createBottomTabNavigator} from "@react-navigation/bottom-tabs";
 import Home from "../screens/Home";
-import {NavigationContainer} from "@react-navigation/native";
-import * as events from "events";
 
 const Tab = createBottomTabNavigator();
 
@@ -19,7 +17,7 @@ const Tabs = () => {
                     }
                 }}
             >
-                <Tab.Screen name='Home' component={Home}
+                <Tab.Screen name='TabHome' component={Home}
                             options={{
                                 headerShown: false,
                                 tabBarLabel: 'Home',

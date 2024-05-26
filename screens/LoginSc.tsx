@@ -16,8 +16,12 @@ const LoginSc = () => {
 
     const loginUser = async (email: string, password: string) => {
         try {
-            await firebase.auth().signInWithEmailAndPassword(email, password);
-            navigation.navigate('Home')
+            const userCreds = await firebase.auth().signInWithEmailAndPassword(email, password);
+            if (userCreds.user?.emailVerified) {
+                navigation.navigate('Home');
+            } else {
+                alert('Please verify your email!');
+            }
         } catch (e) {
             if (e instanceof Error) {
                 alert(e.message)

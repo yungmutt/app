@@ -1,6 +1,5 @@
 import {NavigationContainer} from "@react-navigation/native";
 import {firebase} from "./firebase"
-import Home from "./screens/Home";
 import LoginSc from "./screens/LoginSc";
 import RegistrationSc from "./screens/RegistrationSc";
 import React, {useEffect, useState} from "react";
@@ -9,7 +8,7 @@ import Tabs from "./components/Tabs";
 import EventSc from "./screens/EventSc";
 import ChangeUserInfo from "./screens/ChangeUserInfo";
 import CreatePost from "./screens/CreatePost";
-// import {useGetConcerts} from "./components/useGetConcerts";
+import PostSc from "./screens/PostSc";
 
 const Stack = createStackNavigator();
 const App = () => {
@@ -31,9 +30,9 @@ const App = () => {
     const {user} = useAuthentication();
 
     return user ? (
-        <NavigationContainer>
-            <Tabs/>
-        </NavigationContainer>
+            <NavigationContainer>
+                <Tabs/>
+            </NavigationContainer>
     ):(
             <NavigationContainer>
                 <Stack.Navigator>
@@ -68,6 +67,13 @@ const App = () => {
                     <Stack.Screen
                         name="CreatePost"
                         component={CreatePost}
+                        options={{
+                            headerShown: false,
+                        }}
+                    />
+                    <Stack.Screen
+                        name="PostSc"
+                        component={PostSc}
                         options={{
                             headerShown: false,
                         }}

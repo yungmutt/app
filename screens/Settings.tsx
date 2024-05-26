@@ -14,11 +14,7 @@ const Settings = () => {
     const navigation = useNavigation<NativeStackNavigationProp<any>>();
     const [refreshing, setRefreshing] = React.useState(false);
 
-    const onRefresh = React.useCallback(() => {
-      setRefreshing(true);
-      setTimeout(() => {
-          setRefreshing(false);
-      }, 1500);
+    const fetchUserData = () => {
         firebase.firestore().collection('users')
             .doc(firebase.auth().currentUser?.uid).get()
             .then((snapshot) => {
@@ -30,21 +26,21 @@ const Settings = () => {
                     console.log("User not found")
                 }
             });
+    };
+
+    useEffect(() => {
+        fetchUserData();
     }, []);
 
-    // useEffect(() => {
-    //     firebase.firestore().collection('users')
-    //         .doc(firebase.auth().currentUser?.uid).get()
-    //         .then((snapshot) => {
-    //             if (snapshot.exists){
-    //                 const data = snapshot.data() as User;
-    //                 setUser(`${data.name} ${data.surname}`);
-    //             }
-    //             else {
-    //                 console.log("User not found")
-    //             }
-    //         })
-    // }, []);
+    const onRefresh = React.useCallback(() => {
+      setRefreshing(true);
+      setTimeout(() => {
+          setRefreshing(false);
+      }, 1500);
+      fetchUserData();
+    }, [setRefreshing]);
+
+
 
     return (
         <SafeAreaView style={styles.container}>

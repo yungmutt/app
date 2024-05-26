@@ -15,13 +15,12 @@ const ChangeUserInfo = () => {
     const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
     const db = firebase.firestore();
-    const rdb = firebase.database();
+
     const changeInfo = async (email?: string, password?: string, name?: string, surname?: string) => {
         if (!name && !surname && !email && !password) {
             alert("No submitted data!");
             return;
         }
-
         const userRef = db.collection('users').doc(firebase.auth().currentUser?.uid);
         const updates: {name?: string, surname?: string, email?: string} = {};
         if (name) {
@@ -29,7 +28,7 @@ const ChangeUserInfo = () => {
             alert("Data successfully updated!");
         }
         if (surname) {
-            updates.name = surname
+            updates.surname = surname
             alert("Data successfully updated!");
         }
         if (email) {
