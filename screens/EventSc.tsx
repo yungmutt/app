@@ -14,6 +14,7 @@ import {
 import moment from "moment/moment";
 import {useNavigation} from "@react-navigation/native";
 import SizedBox from "../components/SizedBox";
+import {API_KEY} from '@env'
 
 type EventDetails = {
     id: string;
@@ -59,7 +60,7 @@ const EventSc = ({route}: {route: any}) => {
   const getEventDetails = async () => {
     setLoading(true);
     try {
-        const res = await fetch(`https://app.ticketmaster.com/discovery/v2/events/${route.params.id}?apikey=pFb1A6GsboA31ednH81Y985KXdmkzCHi&locale=*`);
+        const res = await fetch(`https://app.ticketmaster.com/discovery/v2/events/${route.params.id}?apikey=${process.env.API_KEY}&locale=*`);
         const json = await res.json();
         setEventDetails(json);
     } catch (err) {

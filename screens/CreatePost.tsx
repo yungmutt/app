@@ -50,7 +50,7 @@ const CreatePost = ({ route }: { route: RouteProp }) => {
             const storageRef = ref(storage, "images/" + new Date().getTime());
             await uploadBytes(storageRef, blob);
             const url = await getDownloadURL(storageRef);
-            console.log('file info: ', {fileType, url});
+            // console.log('file info: ', {fileType, url});
             return {fileType, url};
         } catch (e: unknown) {
             if (e instanceof Error){

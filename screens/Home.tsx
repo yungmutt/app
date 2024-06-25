@@ -34,11 +34,11 @@ const Home = () => {
 
     const getConcerts = async () => {
         try {
-            const response = await fetch("https://app.ticketmaster.com/discovery/v2/events?apikey=pFb1A6GsboA31ednH81Y985KXdmkzCHi&locale=*&size=5&classificationName=music&geoPoint=51.2589173,22.5516489");
+            const response =
+                await fetch("https://app.ticketmaster.com/discovery/v2/events?apikey=pFb1A6GsboA31ednH81Y985KXdmkzCHi&locale=*&size=5&classificationName=music&geoPoint=51.2589173,22.5516489");
             const json = await response.json();
             const events = json._embedded.events;
             setEvents(events);
-            console.log(events);
         } catch (error) {
             console.error(error);
         } finally {

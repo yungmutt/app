@@ -2,10 +2,11 @@ import firebase from "firebase/compat";
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
 import {getStorage} from 'firebase/storage';
+import {FIREBASE_API_KEY} from "@env";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyCFcBOUhVWTmHvXvmdTu0CCyWP_avADcG4",
+    apiKey: `${FIREBASE_API_KEY}`,
     authDomain: "application-83a87.firebaseapp.com",
     projectId: "application-83a87",
     storageBucket: "application-83a87.appspot.com",
